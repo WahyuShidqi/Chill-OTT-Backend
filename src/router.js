@@ -24,7 +24,7 @@ router.patch(
 router.post("/auth/register", authController.register);
 router.post("/auth/login", authController.login);
 
-// -- STUDENTS (semua butuh token: authenticate sebagai middleware) --
+// -- movies (semua butuh token: authenticate sebagai middleware) --
 router.get("/movies", authenticate, movieController.getAll);
 router.get("/movies/:id", authenticate, movieController.getById);
 router.post("/movies", authenticate, movieController.create);
