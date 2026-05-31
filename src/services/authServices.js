@@ -18,7 +18,7 @@ const register = async ({ name, email, password, role, avatar }) => {
     avatar,
   );
 
-  sendWelcomeEmail(email).catch((err) => {
+  await sendWelcomeEmail(email).catch((err) => {
     console.error("Gagal kirim welcome email:", err.message);
   });
 

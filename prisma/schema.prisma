@@ -1,0 +1,192 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String?
+  email      String  @unique
+  password   String?
+  role       String?
+  avatar     String?
+  createdAt  DateTime? @default(now()) @map("created_at")
+  isDeleted  Boolean?   @default(false) @map("is_deleted")
+
+  daftarSaya DaftarSaya[]
+  orders     Order[]
+
+  @@map("users")
+}
+
+model Series {
+  id          Int       @id @default(autoincrement())
+  title       String?
+  banner      String?
+  poster      String?
+  rating      String?
+  ageRating   String?   @map("age_rating")
+  description String?
+  casts       String?
+  createdBy   String?   @map("created_by")
+  isPremium   Boolean?  @default(false) @map("is_premium")
+  createdAt   DateTime? @default(now()) @map("created_at")
+
+  episodes    Episode[]
+  genres      SeriesGenre[]
+  userLists   UserSeriesList[]
+
+  @@map("series")
+}
+
+model Episode {
+  id          Int       @id @default(autoincrement())
+  title       String?
+  thumbnail   String?
+  description String?
+  duration    Int?
+
+  seriesId    Int?      @map("series_id")
+  series      Series?   @relation(fields: [seriesId], references: [id])
+
+  @@map("episodes")
+}
+
+model Movie {
+  id          Int       @id @default(autoincrement())
+  title       String?
+  banner      String?
+  poster      String?
+  rating      String?
+  ageRating   String?   @map("age_rating")
+  description String?
+  casts       String?
+  createdBy   String?   @map("created_by")
+  duration    Int?
+  isPremium   Boolean?  @default(false) @map("is_premium")
+  createdAt   DateTime? @default(now()) @map("created_at")
+
+  genres      MovieGenre[]
+  userLists   UserMovieList[]
+
+  @@map("movies")
+}
+
+model DaftarSaya {
+  id         Int       @id @default(autoincrement())
+
+  userId     Int?      @map("user_id")
+  createdAt  DateTime? @map("created_at")
+
+  user       User?     @relation(fields: [userId], references: [id])
+
+  movies     UserMovieList[]
+  series     UserSeriesList[]
+
+  @@map("daftar_saya")
+}
+
+model UserMovieList {
+  id            Int       @id @default(autoincrement())
+
+  movieId       Int?      @map("movie_id")
+  daftarSayaId  Int?      @map("daftar_saya_id")
+  createdAt     DateTime? @map("created_at")
+
+  movie         Movie?      @relation(fields: [movieId], references: [id])
+  daftarSaya    DaftarSaya? @relation(fields: [daftarSayaId], references: [id])
+
+  @@map("user_movie_list")
+}
+
+model UserSeriesList {
+  id            Int       @id @default(autoincrement())
+
+  seriesId      Int?      @map("series_id")
+  daftarSayaId  Int?      @map("daftar_saya_id")
+  createdAt     DateTime? @map("created_at")
+
+  series        Series?     @relation(fields: [seriesId], references: [id])
+  daftarSaya    DaftarSaya? @relation(fields: [daftarSayaId], references: [id])
+
+  @@map("user_series_list")
+}
+
+model Genre {
+  genreId    Int     @id @default(autoincrement()) @map("genre_id")
+  genreName  String? @map("genre_name")
+
+  movies     MovieGenre[]
+  series     SeriesGenre[]
+
+  @@map("genre")
+}
+
+model MovieGenre {
+  id        Int @id @default(autoincrement())
+
+  genreId   Int? @map("genre_id")
+  movieId   Int? @map("movie_id")
+
+  genre     Genre? @relation(fields: [genreId], references: [genreId])
+  movie     Movie? @relation(fields: [movieId], references: [id])
+
+  @@map("movie_genre")
+}
+
+model SeriesGenre {
+  id        Int @id @default(autoincrement())
+
+  genreId   Int? @map("genre_id")
+  seriesId  Int? @map("series_id")
+
+  genre     Genre?  @relation(fields: [genreId], references: [genreId])
+  series    Series? @relation(fields: [seriesId], references: [id])
+
+  @@map("series_genre")
+}
+
+model Paket {
+  id      Int     @id @default(autoincrement())
+  name    String?
+  price   Int?
+
+  orders  Order[]
+
+  @@map("paket")
+}
+
+model Order {
+  id        Int @id @default(autoincrement())
+
+  userId    Int? @map("user_id")
+  paketId   Int? @map("paket_id")
+
+  user      User?  @relation(fields: [userId], references: [id])
+  paket     Paket? @relation(fields: [paketId], references: [id])
+
+  pembayaran Pembayaran[]
+
+  @@map("orders")
+}
+
+model Pembayaran {
+  id           Int       @id @default(autoincrement())
+
+  isPaid       Boolean?  @default(false) @map("is_paid")
+  expiredDate  DateTime? @map("expired_date")
+
+  orderId      Int?      @map("order_id")
+  order        Order?    @relation(fields: [orderId], references: [id])
+
+  @@map("pembayaran")
+}       

@@ -2,8 +2,42 @@
 
 import * as movieRepo from "../repositories/movieRepo.js";
 
-const getAllMovies = async () => {
-  return await movieRepo.findAll();
+// const getAllMovies = async () => {
+//   return await movieRepo.findAll();
+// };
+
+const getAllMovies = async (queryParams = {}) => {
+  const {
+    search,
+    sortBy = "id",
+    order = "asc",
+    page = 1,
+    limit = 10,
+  } = queryParams;
+
+  // validasi / sanitasi nilai
+  const safePage = Math.max(1, parseInt(page) || 1);
+  const safeLimit = Math.min(100, Math.max(1, parseInt(limit) || 10));
+  const [data, total] = await Promise.all([
+    movieRepo.findAll({
+      search,
+      sortBy,
+      order,
+      page: safePage,
+      limit: safeLimit,
+    }),
+    movieRepo.countAll(search),
+  ]);
+
+  return {
+    data,
+    meta: {
+      total,
+      page: safePage,
+      limit: safeLimit,
+      totalPages: Math.ceil(total / safeLimit),
+    },
+  };
 };
 
 const getMovieById = async (id) => {
@@ -37,10 +71,45 @@ const addMovie = async (data) => {
   return await movieRepo.create(data);
 };
 
-const updateMovie = async (id, data) => {
-  await getMovieById(id); // cek supaya tidak error silence
+// const updateMovie = async (id, data) => {
+//   await getMovieById(id); // cek supaya tidak error silence
 
-  return await movieRepo.update(id, data);
+//   return await movieRepo.update(id, data);
+// };
+
+const updateMovie = async (id, data) => {
+  const existing = await getMovieById(id);
+
+  const title = data.title !== undefined ? data.title : existing.title;
+  const bannerUrl = data.banner !== undefined ? data.banner : existing.banner;
+  const poster = data.poster !== undefined ? data.poster : existing.poster;
+  const rating = data.rating !== undefined ? data.rating : existing.rating;
+  const ageRating =
+    data.age_rating !== undefined ? data.age_rating : existing.age_rating;
+  const description =
+    data.description !== undefined ? data.description : existing.description;
+  const casts = data.casts !== undefined ? data.casts : existing.casts;
+  const created_by =
+    data.created_by !== undefined ? data.created_by : existing.created_by;
+  const duration =
+    data.duration !== undefined ? data.duration : existing.duration;
+  const isPremium =
+    data.is_premium !== undefined ? data.is_premium : existing.is_premium;
+  // const photo_url =
+  //   data.photo_url !== undefined ? data.photo_url : existing.photo_url;
+  return await movieRepo.update(
+    id,
+    title,
+    bannerUrl,
+    poster,
+    rating,
+    ageRating,
+    description,
+    casts,
+    created_by,
+    duration,
+    isPremium,
+  );
 };
 
 const deleteMovie = async (id) => {
